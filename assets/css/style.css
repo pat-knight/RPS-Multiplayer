@@ -25,3 +25,19 @@
 #message{
     width: 90%;
 }
+
+.playerButtons{
+    display: block;
+    width: 50%;
+    margin: auto;
+}
+
+.gameButton{
+    clear: both;
+    width: 100%;
+}
+
+.scoreboard{
+    position: absolute;
+    bottom: 0;
+}

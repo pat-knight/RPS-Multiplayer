@@ -70,19 +70,27 @@ $(document).on("click", "#btn-submit", function(){
 
 function gameStart(){
     $(".name-form").hide();//hide name submit area
-    $(".name-form").text("Sorry the game is full. Please try again later.");
+    $(".name-form").text("Sorry the game is full. Please try again later.");//not working
+    var buttonDivOne = $("<div class='playerButtons' id='pb1'>");
+    var buttonDivTwo = $("<div class='playerButtons' id='pb2'>");
     var oneRock = $("<button id='oneRock' class='gameButton'>").text("Rock");
     var onePaper = $("<button id='onePaper' class='gameButton'>").text("Paper");
     var oneScissors = $("<button id='oneScissors' class='gameButton'>").text("Scissors");
     var twoRock = $("<button id='twoRock' class='gameButton'>").text("Rock").addClass("twoRock");
-    var twoPaper = $("<button id='TwoPaper' calss='gameButton'>").text("Paper").addClass("twoPaper");
+    var twoPaper = $("<button id='TwoPaper' class='gameButton'>").text("Paper").addClass("twoPaper");
     var twoScissors = $("<button id='twoScissors' class='gameButton'>").text("Scissors").addClass("twoScissors");
-    $("#player-one").append(oneRock);
-    $("#player-one").append(onePaper);
-    $("#player-one").append(oneScissors);
-    $("#player-two").append(twoRock);
-    $("#player-two").append(twoPaper);
-    $("#player-two").append(twoScissors);
+    var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.wins}`);
+    var playerTwoScore = $("<div class='scoreboard'>").text(`Wins: ${playerTwo.wins} Losses:${playerTwo.wins}`);
+    $("#player-one").append(buttonDivOne);
+    $("#player-two").append(buttonDivTwo);
+    $("#player-one").append(playerOneScore);
+    $("#player-two").append(playerTwoScore);
+    $("#pb1").append(oneRock);
+    $("#pb1").append(onePaper);
+    $("#pb1").append(oneScissors);
+    $("#pb2").append(twoRock);
+    $("#pb2").append(twoPaper);
+    $("#pb2").append(twoScissors);
 
 }
 

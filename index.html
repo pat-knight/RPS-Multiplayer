@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- Bootstrap CDN-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="jumbotron">
+        <h1 class="text-center">Rock Paper Scissors</h1>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="form-group">
+                    <label for="player-name">Your Name</label>
+                    <input class="form-control" id="player-name" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="row player-area">
+            <div class="col-md-3 player">Waiting for Player Two</div>
+            <div class="col-md-3 field"></div>
+            <div class="col-md-3 player">Waiting for Player One</div>
+        </div>
+        <div class="row message-area">
+            <div class="col-md-6">
+                <div id="message-display"></div>
+            </div>   
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="form-group">
+                    <input class="message" id="message" type="text">
+                    <button type="button">
+                        <label for="message">Send</label>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
+    <!-- logic.js -->
+    <script type="text/javascript" src="assets/javascript/logic.js"></script>
+    <!-- bootstrap -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+</body>
+</html>

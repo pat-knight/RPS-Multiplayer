@@ -36,7 +36,7 @@ var gameState = {
         full: 2
 }
 
-var messageList = [];
+var chatRoom = [];
 
 
 database.ref().on("value", function(snapshot){
@@ -107,7 +107,11 @@ $("#send-message").on("click", function(){
     var  activeUser = $("#activeUser").val();
     var message = $("#message").val();
 
-    database.ref().set()
+    chatRoom.push({
+        "activeUser": activeUser,
+        "message": message
+    });
+    database.ref().set(chatRoom);
 });
 // function sendMessage(){
 //     ref = database().ref("/Chat");

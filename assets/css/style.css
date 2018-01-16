@@ -20,6 +20,7 @@
     height: 300px;
     background: gray;   
     margin: 8px 0;
+    overflow-y: auto;
 }
 
 #message{
@@ -41,3 +42,4 @@
     position: absolute;
     bottom: 0;
 }
+

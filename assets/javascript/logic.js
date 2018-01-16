@@ -16,6 +16,25 @@ var database = firebase.database();
 window.onload = function(){
     $("#message-display").empty();
     database.ref("/chat/").remove();
+    database.ref("/playerOne/").set({
+        player: false,
+        name: "",
+        wins: 0,
+        losses: 0,
+        choice: "",
+        position: null,
+        // activeUser: false
+    })
+    database.ref("/playerTwo/").set({
+        player: false,
+        name: "",
+        wins: 0,
+        losses: 0,
+        choice: "",
+        position: null,
+        // activeUser: false
+    })
+
 };
 //variables
 var playerOne = {
@@ -63,12 +82,14 @@ $(document).on("click", "#btn-submit", function(){
         alert("Please enter a valid user name");
     }  else if (!playerOne.player){
         var nameOne = $("#player-name").val().trim();
-        playerOne.name = nameOne;
+        database.ref("/playerOne/name/").set(nameOne);
+        // playerOne.name = nameOne;
         $("#player-one").text(nameOne)
         playerOne.player = true;
         $("#player-name").val('');
         activeUser = playerOne;
         joinChat();
+        // database.ref()
     } else if (!playerTwo.player){
         var nameTwo = $("#player-name").val().trim();
         playerTwo.name = nameTwo;
@@ -121,6 +142,10 @@ function makeButtons() {
 //     if ()
 
 // });
+
+function compare(){
+
+}
 //chat
 function joinChat(){
 var joined =  activeUser.name + " has joined the chat!";
@@ -133,14 +158,16 @@ $("#send-message").on("click", function(){
     var messageText = $("#message").val().trim();
     var message = (`${activeUser.name}: ${messageText}`);
 
-    chatRoom.push({
-        "activeUser": activeUser,
-        "message": message
-    });
-
+    chatRoom.push(message);
+    // scrollToBottom()
     $("#send-message").val("");
     database.ref("/chat/").set(chatRoom);
+    $("#message").val("");
 });
+
+// function scrollToBottom() {
+//     $("#message-display").scrollTop = 1500;
+//   };
 
 database.ref("/chat/").on("child_added", function(snapshot) {
 	var messages = snapshot.val();

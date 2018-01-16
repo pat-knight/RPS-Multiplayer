@@ -13,6 +13,10 @@
 //   variable to reference database
 var database = firebase.database();
 
+window.onload = function(){
+    $("#message-display").empty();
+    database.ref("/chat/").remove();
+};
 //variables
 var playerOne = {
         player: false,
@@ -20,7 +24,8 @@ var playerOne = {
         wins: 0,
         losses: 0,
         choice: "",
-        position: null
+        position: null,
+        // activeUser: false
 };
 var playerTwo = {
         player: false,
@@ -28,8 +33,11 @@ var playerTwo = {
         wins: 0,
         losses: 0,
         choice: "",
-        position: null
+        position: null,
+        // activeUser: false
 };
+
+activeUser = {};
 
 var gameState = {
         open: 1,
@@ -51,12 +59,16 @@ database.ref().on("value", function(snapshot){
 $(document).on("click", "#btn-submit", function(){
     if (playerOne.player && playerTwo.player){
         return;
-    } else if (!playerOne.player){
+    } else if ($("#player-name").val().trim() === "") {
+        alert("Please enter a valid user name");
+    }  else if (!playerOne.player){
         var nameOne = $("#player-name").val().trim();
         playerOne.name = nameOne;
         $("#player-one").text(nameOne)
         playerOne.player = true;
         $("#player-name").val('');
+        activeUser = playerOne;
+        joinChat();
     } else if (!playerTwo.player){
         var nameTwo = $("#player-name").val().trim();
         playerTwo.name = nameTwo;
@@ -65,6 +77,8 @@ $(document).on("click", "#btn-submit", function(){
         $("#player-name").val('');
         gameState = 2;
         gameStart();
+        activeUser = playerTwo;
+        joinChat();
     }
     database.ref().set({
         playerOne: playerOne,
@@ -99,19 +113,39 @@ function makeButtons() {
     $("#pb2").append(twoRock);
     $("#pb2").append(twoPaper);
     $("#pb2").append(twoScissors);
-}
+};
 
+// $(document).on("click", ".gameButtom", function(){ event handler for game buttons
+//     var choice = $(this).id;
+
+//     if ()
+
+// });
 //chat
+function joinChat(){
+var joined =  activeUser.name + " has joined the chat!";
+database.ref("/chat/").push(joined);
+};
 
 $("#send-message").on("click", function(){
-    var  activeUser = $("#activeUser").val();
-    var message = $("#message").val();
+    event.preventDefault();
+    // var  activeUser = $("#activeUser").val();
+    var messageText = $("#message").val().trim();
+    var message = (`${activeUser.name}: ${messageText}`);
 
     chatRoom.push({
         "activeUser": activeUser,
         "message": message
     });
-    database.ref().set(chatRoom);
+
+    $("#send-message").val("");
+    database.ref("/chat/").set(chatRoom);
+});
+
+database.ref("/chat/").on("child_added", function(snapshot) {
+	var messages = snapshot.val();
+	console.log(messages);
+	$("#message-display").append(messages + "<br>");
 });
 // function sendMessage(){
 //     ref = database().ref("/Chat");

@@ -1,3 +1,4 @@
+
  // Initialize Firebase
  var config = {
     apiKey: "AIzaSyAP1uWVNAkf27MDW91pfy1K83-PoNmLNns",
@@ -16,56 +17,33 @@ var database = firebase.database();
 window.onload = function(){
     $("#message-display").empty();
     database.ref("/chat/").remove();
-    database.ref("/playerOne/").set({
-        player: false,
-        name: "",
-        wins: 0,
-        losses: 0,
-        choice: "",
-        position: null,
-        // activeUser: false
-    })
-    database.ref("/playerTwo/").set({
-        player: false,
-        name: "",
-        wins: 0,
-        losses: 0,
-        choice: "",
-        position: null,
-        // activeUser: false
-    })
-
+    database.ref("/players/").remove();
 };
 //variables
-var playerOne = {
-        player: false,
-        name: "",
-        wins: 0,
-        losses: 0,
-        choice: "",
-        position: null,
-        // activeUser: false
-};
-var playerTwo = {
-        player: false,
-        name: "",
-        wins: 0,
-        losses: 0,
-        choice: "",
-        position: null,
-        // activeUser: false
-};
 
-activeUser = {};
+//references
+var players = database.ref().child("players");
+// var playerKeys = players.keys;
+var playerOne = null;
+var playerTwo = null;
+var userOne = "";
+var userTwo = "";
+var turn = 1;
+
+
+
+var activeUser = {};
 
 var gameState = {
         open: 1,
-        full: 2
-}
+        full: 2,
+        half: 3,
+        complete: 4
+};
 
 var chatRoom = [];
 
-
+//sync value changes
 database.ref().on("value", function(snapshot){
     console.log(snapshot.val());
 
@@ -75,47 +53,88 @@ database.ref().on("value", function(snapshot){
     // }
 });
 
+players.on("child_added", snap => 
+    console.log(snap.val())
+);
+
 $(document).on("click", "#btn-submit", function(){
-    if (playerOne.player && playerTwo.player){
+    event.preventDefault();
+
+    players.once("value").then(function(snapshot) {
+
+    if (snapshot.child("playerOne").exists() && snapshot.child("playerTwo").exists()){
         return;
+
     } else if ($("#player-name").val().trim() === "") {
         alert("Please enter a valid user name");
-    }  else if (!playerOne.player){
-        var nameOne = $("#player-name").val().trim();
-        database.ref("/playerOne/name/").set(nameOne);
-        // playerOne.name = nameOne;
-        $("#player-one").text(nameOne)
-        playerOne.player = true;
-        $("#player-name").val('');
-        activeUser = playerOne;
-        joinChat();
-        // database.ref()
-    } else if (!playerTwo.player){
-        var nameTwo = $("#player-name").val().trim();
-        playerTwo.name = nameTwo;
-        $("#player-two").text(nameTwo);
-        playerTwo.player= true;
-        $("#player-name").val('');
-        gameState = 2;
+
+    }  else if (!snapshot.child("playerOne").exists()){
+        var name = $("#player-name").val().trim();
+        $("#player-one").text(name)
+        $("#player-name").val('');//clear form
+        database.ref("/players/playerOne").set({//create player object
+            name: name,
+            position: 1,
+            wins: 0,
+            losses: 0,
+            choice: ""
+        });
+        var joined = name + " has joined the chat!";
+        database.ref("/players/turn").set(turn);
+        database.ref("/chat/").push(joined);
+        
+    } else if (!snapshot.child("playerTwo").exists()){
+        var name = $("#player-name").val().trim();
+        $("#player-two").text(name);
+        $("#player-name").val('');//clear form
+        database.ref("/players/playerTwo").set({//create player object
+            name: name,
+            position: 2,
+            wins: 0,
+            losses: 0,
+            choice: ""
+        });
+        var joined = name + " has joined the chat!";
+        database.ref("/chat/").push(joined);
         gameStart();
-        activeUser = playerTwo;
-        joinChat();
+        
     }
-    database.ref().set({
-        playerOne: playerOne,
-        playerTwo: playerTwo
+    // database.ref().set({
+    //     playerOne: playerOne,
+    //     playerTwo: playerTwo
     })
 });
+
+database.ref("/players").on("value", function(snapshot){
+    if (snapshot.child("playerOne").exists()){
+        playerOne = snapshot.val().playerOne;
+        userOne = playerOne.name;
+        var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.losses}`);
+        $("#player-one").append(playerOneScore);        
+    } 
+
+    if (snapshot.child("playerTwo").exists()){
+        playerTwo = snapshot.val().playerTwo;
+        userTwo = playerTwo.name;
+        var playerTwoScore = $("<div class='scoreboard'>").text(`Wins: ${playerTwo.wins} Losses:${playerTwo.losses}`);
+        $("#player-two").append(playerTwoScore);        
+    }
+
+    if (snapshot.child("playerOne").exists() && snapshot.child("playerTwo").exists() && turn === 1){
+        $(".field").text(`Waiting for selection from ${playerOne.name}`);
+    } 
+
+    else if (snapshot.child("playerOne").exists() && snapshot.child("playerTwo").exists() && turn === 2){
+        $(".field").text(`Waiting for selection from ${playerOne.name}`);
+        }
+    });
 
 function gameStart(){
     $(".name-form").hide();//hide name submit area
     $(".name-form").text("Sorry the game is full. Please try again later.");//not working
     makeButtons();
-    var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.wins}`);
-    var playerTwoScore = $("<div class='scoreboard'>").text(`Wins: ${playerTwo.wins} Losses:${playerTwo.wins}`);
-    $("#player-one").append(playerOneScore);
-    $("#player-two").append(playerTwoScore);
-}
+    };
+
 
 function makeButtons() {
     var buttonDivOne = $("<div class='playerButtons' id='pb1'>");
@@ -136,32 +155,29 @@ function makeButtons() {
     $("#pb2").append(twoScissors);
 };
 
-// $(document).on("click", ".gameButtom", function(){ event handler for game buttons
-//     var choice = $(this).id;
+$(document).on("click", ".gameButton", function(){// event handler for game buttons
+    var selection = $(this).text().trim();
+    console.log(selection);
 
-//     if ()
+    // if ()
 
-// });
+});
 
 function compare(){
 
 }
 //chat
-function joinChat(){
-var joined =  activeUser.name + " has joined the chat!";
-database.ref("/chat/").push(joined);
-};
+// function joinChat(){
+// var joined =  activeUser.name + " has joined the chat!";
+// database.ref("/chat/").push(joined);
+// };
 
 $("#send-message").on("click", function(){
     event.preventDefault();
-    // var  activeUser = $("#activeUser").val();
     var messageText = $("#message").val().trim();
-    var message = (`${activeUser.name}: ${messageText}`);
-
-    chatRoom.push(message);
+    var message = (`${name}: ${messageText}`);
+    database.ref("/chat/").push(message);
     // scrollToBottom()
-    $("#send-message").val("");
-    database.ref("/chat/").set(chatRoom);
     $("#message").val("");
 });
 

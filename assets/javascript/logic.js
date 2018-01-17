@@ -23,28 +23,30 @@ window.onload = function(){
 
 //references
 var players = database.ref().child("players");
-// var playerKeys = players.keys;
-var playerOne = null;
-var playerTwo = null;
+// var playerOne = null;
+// var playerTwo = null;
 var userOne = "";
 var userTwo = "";
 var state = 1;
-
+var one = "";
+var two = "";
 var chatRoom = [];
 
 //sync value changes
 database.ref().on("value", function(snapshot){
     console.log(snapshot.val());
 
-
-    // function (errorObject){
-    // console.log(`The read failed ${errorObject.code}`);//print out any errors thrown
-    // }
 });
 
-players.on("child_added", snap => 
-    console.log(snap.val())
-);
+database.ref("/players/").on("child_added", function(snapshot){
+    console.log(snapshot.val())
+
+});
+
+// database.ref("/players/p").on("child_added", function(snapshot){
+//     console.log(snap.val())
+
+// });
 
 $(document).on("click", "#btn-submit", function(){
     event.preventDefault();
@@ -52,6 +54,8 @@ $(document).on("click", "#btn-submit", function(){
     players.once("value").then(function(snapshot) {
 
     if (snapshot.child("playerOne").exists() && snapshot.child("playerTwo").exists()){
+        gameStart();
+        alert("sorry, the game is full.")
         return;
 
     } else if ($("#player-name").val().trim() === "") {
@@ -66,7 +70,7 @@ $(document).on("click", "#btn-submit", function(){
             position: 1,
             wins: 0,
             losses: 0,
-            selection: ""
+            selection: null
         });
         var joined = name + " has joined the chat!";
         database.ref("/players/state").set(state);
@@ -81,7 +85,7 @@ $(document).on("click", "#btn-submit", function(){
             position: 2,
             wins: 0,
             losses: 0,
-            selection: ""
+            selection: null
         });
         var joined = name + " has joined the chat!";
         database.ref("/chat/").push(joined);
@@ -120,7 +124,6 @@ database.ref("/players").on("value", function(snapshot){
 
 function gameStart(){
     $(".name-form").hide();//hide name submit area
-    $(".name-form").text("Sorry the game is full. Please try again later.");//not working
     makeButtons();
     };
 
@@ -128,12 +131,12 @@ function gameStart(){
 function makeButtons() {
     var buttonDivOne = $("<div class='playerButtons' id='pb1'>");
     var buttonDivTwo = $("<div class='playerButtons' id='pb2'>");
-    var oneRock = $("<button id='oneRock' class='gameButtonOne'>").text(" Rock").prepend($("<i class='fa fa-hand-rock-o' aria-hidden='true'>"));
-    var onePaper = $("<button id='onePaper' class='gameButtonOne'>").text(" Paper").prepend($("<i class='fa fa-hand-paper-o' aria-hidden='true'>"));
-    var oneScissors = $("<button id='oneScissors' class='gameButtonOne'>").text(" Scissors").prepend($("<i class='fa fa-hand-scissors-o' aria-hidden='true'>"));
-    var twoRock = $("<button id='twoRock' class='gameButtonTwo'>").text(" Rock").addClass("twoRock").prepend($("<i class='fa fa-hand-rock-o' aria-hidden='true'>"));
-    var twoPaper = $("<button id='TwoPaper' class='gameButtonTwo'>").text(" Paper").addClass("twoPaper").prepend($("<i class='fa fa-hand-paper-o' aria-hidden='true'>"));
-    var twoScissors = $("<button id='twoScissors' class='gameButtonTwo'>").text(" Scissors").addClass("twoScissors").prepend($("<i class='fa fa-hand-scissors-o' aria-hidden='true'>"));
+    var oneRock = $("<button data-id='oneRock' class='gameButtonOne'>").text(" Rock").prepend($("<i class='fa fa-hand-rock-o' aria-hidden='true'>"));
+    var onePaper = $("<button data-id='onePaper' class='gameButtonOne'>").text(" Paper").prepend($("<i class='fa fa-hand-paper-o' aria-hidden='true'>"));
+    var oneScissors = $("<button data-id='oneScissors' class='gameButtonOne'>").text(" Scissors").prepend($("<i class='fa fa-hand-scissors-o' aria-hidden='true'>"));
+    var twoRock = $("<button data-id='twoRock' class='gameButtonTwo'>").text(" Rock").addClass("twoRock").prepend($("<i class='fa fa-hand-rock-o' aria-hidden='true'>"));
+    var twoPaper = $("<button data-id='TwoPaper' class='gameButtonTwo'>").text(" Paper").addClass("twoPaper").prepend($("<i class='fa fa-hand-paper-o' aria-hidden='true'>"));
+    var twoScissors = $("<button data-id='twoScissors' class='gameButtonTwo'>").text(" Scissors").addClass("twoScissors").prepend($("<i class='fa fa-hand-scissors-o' aria-hidden='true'>"));
     $("#player-one").append(buttonDivOne);
     $("#player-two").append(buttonDivTwo);
     $("#pb1").append(oneRock);
@@ -148,7 +151,8 @@ $(document).on("click", ".gameButtonOne", function(){// event handler for game b
     if (state === 1){
     
     var selection = $(this).text().trim();
-    console.log("player one: " + selection);
+    var selectString = JSON.stringify(selection);    
+    console.log("player one: " + selectString);
     database.ref("/players/playerOne/selection").set(selection);
     $("#pb1").remove();
     $("#player-one").append($("<p>")).text(`You selected ${selection}`);
@@ -162,7 +166,8 @@ $(document).on("click", ".gameButtonTwo", function(){// event handler for game b
     
     
     var selection = $(this).text().trim();
-    console.log("player two: " + selection);
+    var selectString = JSON.stringify(selection);
+    console.log("player two: " + selectString);
     database.ref("/players/playerTwo/selection").set(selection);
     $("#pb2").remove();
     $("#player-two").append($("<p>")).text(`You selected ${selection}`);
@@ -171,70 +176,69 @@ $(document).on("click", ".gameButtonTwo", function(){// event handler for game b
 });
 
 function shoot(){
+    database.ref().on("value", function(snapshot) {
+    // var players = snapshot.
     var one = playerOne.selection;
     var two = playerTwo.selection;
-
-    if (one === two){
-        console.log("tie game");
-        $(".field").text("TIE : /");
-        playAgain();
-        return;
-    };
-    if (one === "rock" && two === "paper"){
-        
+    // var one = snapshot.child("/players/playerOne/selection").val();
+    // var two = snapshot.child("/players/playerTwo/selection").val();
+    // var two = playerTwo.selection;
+    
+    if ((one === "rock") && (two === "paper")){
             database.ref("players/playerOne/losses").set(playerOne.losses ++);
             database.ref("players/playerTwo/wins").set(playerTwo.wins ++);
             $(".field").text(`${playerTwo.name} Wins!`);
             playAgain();
             return
-            
-        } else {
+        }  
+            else if ((one === "rock") && (two === "scissors")) {
             database.ref("players/playerTwo/losses").set(playerTwo.losses ++);
             database.ref("players/playerOne/wins").set(playerOne.wins ++);
             $(".field").text(`${playerOne.name} Wins!`);
             playAgain();
             return;
-        }
 
-    
-    if (one === "paper" && two === "rock"){
-            database.ref("players/playerOne/losses").set(playerOne.losses ++);
-            database.ref("players/playerTwo/wins").set(playerTwo.wins ++);
-            $(".field").text(`${playerTwo.name} Wins!`);
-            playAgain();
-            return;
-            
-        } else{
-            database.ref("players/playerTwo/losses").set(playerTwo.losses ++);
-            database.ref("players/playerOne/wins").set(playerOne.wins ++);
-            $(".field").text(`${playerOne.name} Wins!`);
-            playAgain();
-            return;
-            
-        }
-    
-    if (one === "scissors" && two === "rock"){
-            database.ref("players/playerOne/losses").set(playerOne.losses ++);
-            database.ref("players/playerTwo/wins").set(playerTwo.wins ++);
-            $(".field").text(`${playerTwo.name} Wins!`); 
-            playAgain();
-            return;
-            
-        } else {
-            database.ref("players/playerTwo/losses").set(playerTwo.losses ++);
-            database.ref("players/playerOne/wins").set(playerOne.wins ++);
-            $(".field").text(`${playerOne.name} Wins!`)
-            playAgain();  
-            return;          
-        }
+        }   else if ((one === "paper") && (two === "scissors")){
+                database.ref("players/playerOne/losses").set(playerOne.losses ++);
+                database.ref("players/playerTwo/wins").set(playerTwo.wins ++);
+                $(".field").text(`${playerTwo.name} Wins!`);
+                playAgain();
+                return
 
-};
+            }   else if ((one === "paper") && (two === "rock")) {
+                database.ref("players/playerTwo/losses").set(playerTwo.losses ++);
+                database.ref("players/playerOne/wins").set(playerOne.wins ++);
+                $(".field").text(`${playerOne.name} Wins!`);
+                playAgain();
+                return;
+
+            } else if ((one === "scissors") && (two === "rock")){
+                    database.ref("players/playerOne/losses").set(playerOne.losses ++);
+                    database.ref("players/playerTwo/wins").set(playerTwo.wins ++);
+                    $(".field").text(`${playerTwo.name} Wins!`);
+                    playAgain();
+                    return
+                }  
+                    else if ((one === "scissors") && (two === "paper")) {
+                    database.ref("players/playerTwo/losses").set(playerTwo.losses ++);
+                    database.ref("players/playerOne/wins").set(playerOne.wins ++);
+                    $(".field").text(`${playerOne.name} Wins!`);
+                    playAgain();
+                    return;
+                } else {
+                        console.log("tie game");
+                        $(".field").text("TIE : /");
+                        playAgain();
+                        return;
+                    };
+                }
+    )}
 
 function playAgain(){
-    // var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.losses}`);
-    // $("#player-one").append(playerOneScore);
-    // var playerTwoScore = $("<div class='scoreboard'>").text(`Wins: ${playerTwo.wins} Losses:${playerTwo.losses}`);
-    // $("#player-two").append(playerTwoScore); 
+    var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.losses}`);
+    $("#player-one").append(playerOneScore);
+    var playerTwoScore = $("<div class='scoreboard'>").text(`Wins: ${playerTwo.wins} Losses:${playerTwo.losses}`);
+    $("#player-two").append(playerTwoScore); 
     var reset = $("<button id='reset'>").text("Play Again?");
     $(".field").append(reset);
 }
@@ -246,11 +250,6 @@ $(document).on("click", "#reset", function(){
     makeButtons();
 });
 
-//chat
-// function joinChat(){
-// var joined =  activeUser.name + " has joined the chat!";
-// database.ref("/chat/").push(joined);
-// };
 
 $("#send-message").on("click", function(){
     event.preventDefault();

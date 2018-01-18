@@ -25,6 +25,9 @@ window.onload = function(){
 var players = database.ref().child("players");
 var chatroom = database.ref().child("chat");
 var active = database.ref("active");
+
+//initialize variables
+
 var user = {
     position: "0",
     name: "",
@@ -42,6 +45,8 @@ var enemy = {
     turns: 0,
     selection: ""
 }
+var activate;
+var waiting = false;
 // var playerOne = null;
 // var playerTwo = null;
 var userOne = "";
@@ -52,6 +57,28 @@ var two = "";
 var choices = [];
 var chatRoom = [];
 
+//set player position
+active.once("value", function(snapshot){
+    if (Object.keys(snapshot.val()).indexOf("1") === -1){
+        user.position = "1";
+        enemy.position = "2";
+    } else {
+        user.position = "2";
+        enemy.position = "1";
+    }
+
+
+//sync data with Firebase
+    if (user.position !== "0"){
+        activate = active.child(user.position);
+        activate.set(user);
+        activate.onDisconnect().remove();
+
+    } else {
+        $(".row").hide();
+        alert("Sorry, the game is currently full");
+    }
+})
 //sync value changes
 database.ref().on("value", function(snapshot){
     console.log(snapshot.val());

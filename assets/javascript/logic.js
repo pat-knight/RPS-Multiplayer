@@ -23,6 +23,25 @@ window.onload = function(){
 
 //references
 var players = database.ref().child("players");
+var chatroom = database.ref().child("chat");
+var active = database.ref("active");
+var user = {
+    position: "0",
+    name: "",
+    wins: 0,
+    losses: 0,
+    turns: 0,
+    selection: ""
+}
+
+var enemy = {
+    position: "0",
+    name: "",
+    wins: 0,
+    losses: 0,
+    turns: 0,
+    selection: ""
+}
 // var playerOne = null;
 // var playerTwo = null;
 var userOne = "";
@@ -30,6 +49,7 @@ var userTwo = "";
 var state = 1;
 var one = "";
 var two = "";
+var choices = [];
 var chatRoom = [];
 
 //sync value changes
@@ -153,7 +173,7 @@ $(document).on("click", ".gameButtonOne", function(){// event handler for game b
     var selection = $(this).text().trim();
     var selectString = JSON.stringify(selection);    
     console.log("player one: " + selectString);
-    database.ref("/players/playerOne/selection").set(selection);
+    database.ref("/players/p1").push(selection);
     $("#pb1").remove();
     $("#player-one").append($("<p>")).text(`You selected ${selection}`);
     $(".field").text(`Waiting for selection from player 2`);
@@ -168,18 +188,26 @@ $(document).on("click", ".gameButtonTwo", function(){// event handler for game b
     var selection = $(this).text().trim();
     var selectString = JSON.stringify(selection);
     console.log("player two: " + selectString);
-    database.ref("/players/playerTwo/selection").set(selection);
+    database.ref("/players/p2").push(selection);
     $("#pb2").remove();
     $("#player-two").append($("<p>")).text(`You selected ${selection}`);
     shoot();
     
 });
 
+players.on("child_added", function(snapshot) {
+    var one = snapshot.p1;
+    var two = snapshot.p2;
+    choices.push(one);
+    choices.push(two);
+})
+
+
 function shoot(){
-    database.ref().on("value", function(snapshot) {
-    // var players = snapshot.
-    var one = playerOne.selection;
-    var two = playerTwo.selection;
+    // database.ref("/players/").on("Child_added", function(snapshot) {
+    // // var players = snapshot.
+    var one = choices[0];
+    var two = choices[1];
     // var one = snapshot.child("/players/playerOne/selection").val();
     // var two = snapshot.child("/players/playerTwo/selection").val();
     // var two = playerTwo.selection;
@@ -232,7 +260,7 @@ function shoot(){
                         return;
                     };
                 }
-    )}
+    // )}
 
 function playAgain(){
     var playerOneScore = $("<div class='scoreboard'>").text(`Wins: ${playerOne.wins} Losses:${playerOne.losses}`);
